@@ -66,19 +66,33 @@ class note:
 			 return False
 	
 	def __str__(self):
-		return f'{self.coord_x} {self.coord_y} {self.width} {self.height} \
-			{self.color} {self.message}'
+		return f'{self.coord_x} {self.coord_y} {self.width} {self.height} {self.color} {self.message}'
+	
+	def check_dimensions(self):
+		if (int(self.coord_x) + int(self.width)) > int(main_board.board_width) or \
+			(int(self.coord_y) + int(self.height)) > int(main_board.board_height):
+			return False
+		else:
+			return True
 
 # Post incomplete - Must account for board information (height, color)
 def post(note_obj):
 	# if (note fits dimensions of board)
-	if (note_obj.height + note_obj.coord_y)<main_board.board_height and \
-		(not_obj.width + note_obj.coord_x)<main_board.board_width:
-		notes.append(note_obj)
+	"""
+	if (int(note_obj.height) + int(note_obj.coord_y)) < int(main_board.board_height) and \
+		(int(note_obj.width) + int(note_obj.coord_x))<main_board.board_width:
+		
 		return "Message Posted" + str(note_obj.message)
+		"""
+	if note_obj.check_dimensions():
+		notes.append(note_obj)
+		return "note posted"
 	else:
+		print("Note height is " + note_obj.height + note_obj.coord_y)
+		print(main_board.board_height)
 		return "Message not posted: Insufficient space on board"
 	# print("note posted: " + note_obj.message)
+
 
 def get(string):
 
@@ -105,17 +119,42 @@ def get(string):
 	except ValueError:
 		refers_index = -1
 
-	notes_returned = []
-
 	if color_index != -1:
 		new_color = command[color_index+1]
+	else:
+		new_color = ""
 	if  contain_index != -1:
 		new_x_coord = command[contain_index+1]
 		new_y_coord = command[contain_index+2]
+	else:
+		new_x_coord = new_y_coord = ""
 	if refers_index != -1:
 		new_reference = command[contain_index:]
 		new_text = ' '.join(new_reference)
+	else:
+		new_text = ""
 
+	notes_returned = notes
+	
+	count = 0
+
+	for i in notes_returned:
+		if ((new_color != "" and i.color != new_color) or (contain_index != "" and \
+			 i.coord_x != new_x_coord and i.coord_y != new_y_coord) or \
+				 (new_text != "" and new_text not in i.message)):
+			notes_returned.pop(count)
+			count-=1
+		
+		count+= 1
+	
+	# send to client
+	obj_string = "\n"
+	for x in notes_returned:
+		obj_string += str(x) + "\n"
+
+	return obj_string
+
+"""
 	for i in notes:
 		if new_color == i.color:
 			if i not in notes_returned:
@@ -129,9 +168,7 @@ def get(string):
 		if new_text in i.message:
 			if i not in notes_returned:
 				notes_returned.append(i)
-
-	# send to client
-	return notes_returned[0].message
+"""
 
 def clear():
 	return 1
