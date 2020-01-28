@@ -4,14 +4,14 @@ import sys # In order to terminate the program
 
 serverName = 'localhost'
 # Assign a port number
-serverPort = 6789
+serverPort = 6550
 
 # Bind the socket to server address and server port
 clientSocket = socket(AF_INET, SOCK_STREAM)
 
 clientSocket.connect((serverName, serverPort))
 
-#a = "POST 2 3 10 20 white"
+# POST 2 3 10 20 white
 # Prompt for input
 command = input('Enter Command (POST, GET, PIN/UNPIN, CLEAR, DISCONNECT):')
 
@@ -19,8 +19,8 @@ command = input('Enter Command (POST, GET, PIN/UNPIN, CLEAR, DISCONNECT):')
 clientSocket.send(command.encode())
 
 # Recieve response from server
-user_input = clientSocket.recv(1024)
+server_response = clientSocket.recv(1024)
 
 # Print server's response
-print('From server: ', user_input.decode())
+print('From server: ', server_response.decode())
 clientSocket.close()
