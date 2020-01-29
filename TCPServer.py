@@ -134,19 +134,18 @@ def get(string):
 	else:
 		new_text = ""
 
-	notes_returned = notes
+	notes_returned = notes.copy()
 	
-	count = 0
-
 	for i in notes_returned:
-		if ((new_color != "" and i.color != new_color) or (contain_index != "" and \
-			 i.coord_x != new_x_coord and i.coord_y != new_y_coord) or \
-				 (new_text != "" and new_text not in i.message)):
-			notes_returned.pop(count)
-			count-=1
-		
-		count+= 1
-	
+		#if (color_index != -1 and i.color!=new_color):
+			
+		if ((color_index != -1 and str(i.color) != str(new_color)) or \
+			(contain_index != -1 and (str(i.coord_x) != str(new_x_coord) or \
+				str(i.coord_y) != str(new_y_coord))) or \
+				(refers_index != -1 and str(new_text) not in str(i.message))):
+			notes_returned.remove(i)
+			print("Note: " + i.message + " :removed from temp list\n")
+
 	# send to client
 	obj_string = "\n"
 	for x in notes_returned:
