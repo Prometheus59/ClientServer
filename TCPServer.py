@@ -105,6 +105,7 @@ def get(string):
 	arg1_command = arg1.split("=")
 	if (arg1_command == "color"):
 	"""
+	# Getting commands from client input
 	command = string.replace("="," ").split()
 	try:
 		color_index = command.index("color")
@@ -119,6 +120,7 @@ def get(string):
 	except ValueError:
 		refers_index = -1
 
+	# Set new variables as either empty string or string parameter values
 	if color_index != -1:
 		new_color = command[color_index+1]
 	else:
@@ -127,7 +129,8 @@ def get(string):
 		new_x_coord = command[contain_index+1]
 		new_y_coord = command[contain_index+2]
 	else:
-		new_x_coord = new_y_coord = ""
+		new_x_coord = ""
+		new_y_coord = ""
 	if refers_index != -1:
 		new_reference = command[contain_index:]
 		new_text = ' '.join(new_reference)
@@ -135,16 +138,39 @@ def get(string):
 		new_text = ""
 
 	notes_returned = notes.copy()
-	
+	"""
 	for i in notes_returned:
-		#if (color_index != -1 and i.color!=new_color):
-			
+
 		if ((color_index != -1 and str(i.color) != str(new_color)) or \
 			(contain_index != -1 and (str(i.coord_x) != str(new_x_coord) or \
 				str(i.coord_y) != str(new_y_coord))) or \
 				(refers_index != -1 and str(new_text) not in str(i.message))):
 			notes_returned.remove(i)
-			print("Note: " + i.message + " :removed from temp list\n")
+			print("Note: " + i.message  + " :removed\n")
+		
+		if (color_index != -1 and str(i.color) != str(new_color)):
+			notes_returned.remove(i)
+			print("Note: " + i.message  + " :removed in color check\n")
+		if (contain_index != -1 and (i.coord_x != new_x_coord or i.coord_y != new_y_coord)):
+			notes_returned.remove(i)
+			print("Note: " + i.message  + " :removed in contain check\n")
+		if (refers_index != -1 and str(new_text) not in str(i.message)):
+			notes_returned.remove(i)
+			print("Note: " + i.message  + " :removed in refersTo check\n")
+	"""
+	j = 0
+	while (j < len(notes_returned)):
+		if (color_index != -1 and str(notes_returned[j].color) != str(new_color)):
+			print("Note: " + notes_returned[j].message  + " :removed in color check\n")
+			notes_returned.pop(j)
+		elif (contain_index != -1 and (notes_returned[j].coord_x != new_x_coord or notes_returned[j].coord_y != new_y_coord)):
+			print("Note: " + notes_returned[j].message  + " :removed in contain check\n")
+			notes_returned.pop(j)
+		elif (refers_index != -1 and str(new_text) not in str(notes_returned[j].message)):
+			print("Note: " + notes_returned[j].message  + " :removed in refersTo check\n")
+			notes_returned.pop(j)
+		else:
+			j += 1
 
 	# send to client
 	obj_string = "\n"
