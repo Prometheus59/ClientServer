@@ -1,5 +1,7 @@
 # Import socket module
 from socket import * 
+import _thread
+import threading
 import sys # In order to terminate the program
 
 # For testing: python TCPServer.py 6550 200 100 red white blue
@@ -40,9 +42,10 @@ def main(string):
 	elif arr[0].upper() == 'GET':
 		return get(string)
 	elif arr[0].upper() == 'CLEAR':
-		clear()
-	elif arr[0].upper() == 'PIN':
-		pin(arr[1])
+		return clear()
+	elif arr[0].upper() == 'PIN' or arr[0].upper() == 'UNPIN':
+		arr = string.split(" ", 3)
+		return pin(arr[0], arr[1], arr[2])
 	elif arr[0].upper() == 'DISCONNECT':
 		disconnect()
 
@@ -75,7 +78,7 @@ class note:
 		else:
 			return True
 
-# Post incomplete - Must account for board information (height, color)
+# Post incomplete - Must account for board information (color)
 def post(note_obj):
 	# if (note fits dimensions of board)
 	"""
@@ -146,15 +149,47 @@ def get(string):
 	# send messages to client
 	obj_string = "\n"
 	for x in notes_returned:
-		obj_string += str(x) + "\n"
-
+		if (x.status == 0):
+			obj_string += str(x) + " - Unpinned\n"
+		else:
+			obj_string += str(x) + " - Pinned \n"
 	return obj_string
 
-def clear():
-	return 1
 
-def pin():
-	return 1
+def clear():
+	i = 0;
+	while (i < len(notes)):
+		print("Status of: " + str(notes[i].message) + " is " + str(notes[i].status))
+		if (notes[i].status <= 0):
+			# print("Note removed: " + str(i.message))
+			notes.pop(i)
+		else:
+			i += 1
+	return "Notes Cleared"
+
+
+def pin(choice, x, y):
+	for i in notes:
+		if (is_contained(i, x, y) == True):
+			if (choice == "PIN"):
+				i.status += 1
+				print("Note Pinned successfully\n")
+			elif (choice == "UNPIN"):
+				i.status -= 1
+				print("Note Unpinned successfully\n")
+			else:
+				print("This is wrong\n")
+	return "PIN Function complete\n"
+
+
+def is_contained(note, x, y):
+	if ((int(y)<(int(note.coord_y) + int(note.height)) and (int(y) > int(note.coord_y))) and \
+		(int(x)<(int(note.coord_x) + int(note.width)) and (int(x) > int(note.coord_x)))):
+		print("note not contained")
+		return True
+	else:
+		print("note contained")
+		return False
 
 def disconnect():
 	serverSocket.close()
