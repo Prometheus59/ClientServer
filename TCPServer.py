@@ -171,7 +171,7 @@ def get(string):
 		if (x.status == 0):
 			obj_string += str(x) + " - Unpinned\n"
 		else:
-			obj_string += str(x) + " - Pinned\n"
+			obj_string += str(x) + " - Pinned \n"
 	# Return note
 	return obj_string
 
