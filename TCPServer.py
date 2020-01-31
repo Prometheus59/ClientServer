@@ -47,6 +47,7 @@ def main(string):
 		arr = string.split(" ", 3)
 		return pin(arr[0], arr[1], arr[2])
 	elif arr[0].upper() == 'DISCONNECT':
+		# Send some kind of message to client that server is closed
 		disconnect()
 
 class note:
@@ -77,6 +78,12 @@ class note:
 			return False
 		else:
 			return True
+	
+	def check_color(self):
+		if (self.color not in main_board.colors):
+			return False
+		else:
+			return True
 
 # Post incomplete - Must account for board information (color)
 def post(note_obj):
@@ -87,13 +94,13 @@ def post(note_obj):
 		
 		return "Message Posted" + str(note_obj.message)
 		"""
-	if note_obj.check_dimensions():
+	if (note_obj.check_dimensions() and note_obj.check_color()):
 		notes.append(note_obj)
 		return "note posted"
-	else:
-		print("Note height is " + note_obj.height + note_obj.coord_y)
-		print(main_board.board_height)
+	elif(note_obj.check_dimensions() == False):
 		return "Message not posted: Insufficient space on board"
+	else:
+		return "Message not posted: Color not permitted on board"
 	# print("note posted: " + note_obj.message)
 
 
@@ -126,7 +133,7 @@ def get(string):
 		new_x_coord = ""
 		new_y_coord = ""
 	if refers_index != -1:
-		new_reference = command[contain_index:]
+		new_reference = command[refers_index+1:]
 		new_text = ' '.join(new_reference)
 	else:
 		new_text = ""
@@ -138,10 +145,15 @@ def get(string):
 	j = 0
 	while (j < len(notes_returned)):
 		if (color_index != -1 and str(notes_returned[j].color) != str(new_color)):
+			print("color popped: " + str(notes_returned[j].message))
 			notes_returned.pop(j)
-		elif (contain_index != -1 and (notes_returned[j].coord_x != new_x_coord or notes_returned[j].coord_y != new_y_coord)):
+		elif (contain_index != -1 and (is_contained(notes_returned[j], new_x_coord, new_y_coord) == False)):
+			print("contains popped: " + str(notes_returned[j].message))
 			notes_returned.pop(j)
+		#problem is with following line
 		elif (refers_index != -1 and str(new_text) not in str(notes_returned[j].message)):
+			print("new_text is: " + str(new_text))
+			print("refersTo popped: " + str(notes_returned[j].message))
 			notes_returned.pop(j)
 		else:
 			j += 1
