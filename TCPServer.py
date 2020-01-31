@@ -1,13 +1,12 @@
 # Import socket module
 from socket import * 
+# Import for multithreading
 import _thread
 import threading
-import sys # In order to terminate the program
-
-# For testing: python TCPServer.py 6550 200 100 red white blue
-
+# Import to terminate the program
+import sys 
 colors = []
-
+# Intial board
 port_number = sys.argv[1]
 board_width  = sys.argv[2]
 board_height = sys.argv[3]
@@ -19,7 +18,9 @@ for x in sys.argv[4:]:
 for x in colors:
 	print("Color added: " + str(x))
 
+# Board class 
 class board:
+	# Initialzie board
 	def __init__(self, port_number, board_width, board_height, colors):
 		self.port_number = port_number
 		self.board_width = board_width
@@ -28,39 +29,50 @@ class board:
 
 # This is shared between all clients (share object)
 main_board = board(port_number, board_width, board_height, colors)
-
+# Data structure to hold note objects
 notes = []
+# Data structure to hold pin coordinates
 pins = []
 
+# Main function to call on other functions
 def main(string):
-	arr = string.split(" ",1)
-
+	# Split string to get user request
+	arr = string.split(" ", 1)
+	# POST
 	if arr[0].upper() == 'POST':
+		# Split strinf to get each element
 		arr = string.split(" ", 6)
 		new_note = note(arr[1], arr[2], arr[3], arr[4], arr[5], arr[6])
 		return post(new_note)
+	# GET
 	elif arr[0].upper() == 'GET':
 		return get(string)
+	# CLEAR
 	elif arr[0].upper() == 'CLEAR':
 		return clear()
+	# PIN/UNPIN
 	elif arr[0].upper() == 'PIN' or arr[0].upper() == 'UNPIN':
+		# Split strinf to get each element
 		arr = string.split(" ", 3)
 		return pin(arr[0], arr[1], arr[2])
+	# DISCONNECT
 	elif arr[0].upper() == 'DISCONNECT':
 		# Send some kind of message to client that server is closed
 		disconnect()
 
+# Note class 
 class note:
+	# Initialzie note 
 	def __init__(self, coord_x, coord_y, width, height, color, message):
-		self.coord_x = coord_x
-		self.coord_y = coord_y
-		self.width = width
-		self.height = height
-		self.color = color
-		self.message = message
-		self.status = 0
+		self.coord_x = coord_x 	# X-Cord
+		self.coord_y = coord_y	# Y-Cord
+		self.width = width		# Width
+		self.height = height	# Height
+		self.color = color		# Color
+		self.message = message	# Text 
+		self.status = 0			# PINED/UNPINED indicator
 	
-	# comparing
+	# Comparing
 	def __eq__(self, other):
 		if self.coord_x == other.coord_x and self.coord_y == self.coord_y \
 		and self.width==other.width and self.height == other.height \
@@ -68,10 +80,12 @@ class note:
 			return True
 		else:
 			 return False
-	
+
+	# Retrun object in string form
 	def __str__(self):
 		return f'{self.coord_x} {self.coord_y} {self.width} {self.height} {self.color} {self.message}'
-	
+
+	# Check if the note will fit on the board
 	def check_dimensions(self):
 		if (int(self.coord_x) + int(self.width)) > int(main_board.board_width) or \
 			(int(self.coord_y) + int(self.height)) > int(main_board.board_height):
@@ -87,7 +101,6 @@ class note:
 
 # Post incomplete - Must account for board information (color)
 def post(note_obj):
-	# if (note fits dimensions of board)
 	"""
 	if (int(note_obj.height) + int(note_obj.coord_y)) < int(main_board.board_height) and \
 		(int(note_obj.width) + int(note_obj.coord_x))<main_board.board_width:
@@ -104,8 +117,8 @@ def post(note_obj):
 	# print("note posted: " + note_obj.message)
 
 
+# GET function - retrives note from data strcture
 def get(string):
-
 	# Getting commands from client input
 	command = string.replace("="," ").split()
 
@@ -181,21 +194,23 @@ def get(string):
 			pin_string += "PIN " + str(x[1]) + str(x[0]) + "\n"
 		return pin_string
 
-
+# CLEAR function - clears all UNPINED notes
 def clear():
 	i = 0;
 	while (i < len(notes)):
-		print("Status of: " + str(notes[i].message) + " is " + str(notes[i].status))
+		print("Status Of: " + str(notes[i].message) + " Is " + str(notes[i].status))
 		if (notes[i].status <= 0):
 			# print("Note removed: " + str(i.message))
-			notes.pop(i)
+			notes.pop(i)	# Remove note from list
 		else:
 			i += 1
-	return "Notes Cleared"
+	# Return message
+	return "All Unpined Notes Cleared!"
 
-
+# PIN function - updates the status of the note object 	
 def pin(choice, x, y):
 	for i in notes:
+		# If pin lands on note
 		if (is_contained(i, x, y) == True):
 			print("pin is contained\n")
 			if (choice == "PIN"):
@@ -212,26 +227,24 @@ def pin(choice, x, y):
 				return ("Note Unpinned successfully\n")
 	return "No notes to pin\n"
 
-
+# Function to determine if note can be pinned
 def is_contained(note, x, y):
 	if ((int(y)<(int(note.coord_y) + int(note.height)) and (int(y) > int(note.coord_y))) and \
 		(int(x)<(int(note.coord_x) + int(note.width)) and (int(x) > int(note.coord_x)))):
-		print("note not contained")
+		print("Note Not Contained")
 		return True
 	else:
-		print("note contained")
+		print("Note Contained")
 		return False
 
+# DISCONNECT function - server will disconnect from client
 def disconnect():
 	serverSocket.close()
 	sys.exit()
 
-
-
 # Create a TCP server socket
 #(AF_INET is used for IPv4 protocols)
 #(SOCK_STREAM is used for TCP)
-
 serverSocket = socket(AF_INET, SOCK_STREAM)
 
 # Assign a port number
@@ -246,7 +259,6 @@ serverSocket.listen(1)
 print ('Server setup complete')
 
 # Server should be up and running and listening to the incoming connections
-
 while True:
 	print('The server is ready to receive')
 
@@ -267,4 +279,5 @@ while True:
 	connectionSocket.close()
 
 serverSocket.close()
-sys.exit()#Terminate the program after sending the corresponding data
+# Terminate the program after sending the corresponding data
+sys.exit()

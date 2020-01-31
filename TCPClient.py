@@ -1,6 +1,7 @@
 # Import socket module
 from socket import * 
-import sys # In order to terminate the program
+# In order to terminate the program
+import sys 
 
 serverName = 'localhost'
 # Assign a port number
