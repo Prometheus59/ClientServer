@@ -92,6 +92,8 @@ class note:
 		else:
 			return True
 
+
+# pins = [(1,1), (2,2), (3,3)]
 # POST function - puts note into data strcture
 def post(note_obj):
 	"""
