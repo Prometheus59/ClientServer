@@ -78,7 +78,7 @@ class note:
 			return False
 		else:
 			return True
-	
+
 	def check_color(self):
 		if (self.color not in main_board.colors):
 			return False
@@ -108,64 +108,78 @@ def get(string):
 
 	# Getting commands from client input
 	command = string.replace("="," ").split()
-	try:
-		color_index = command.index("color")
-	except ValueError:
-		color_index = -1
-	try:
-		contain_index = command.index("contains")
-	except ValueError:
-		contain_index = -1
-	try:
-		refers_index = command.index("refersTo")
-	except ValueError:
-		refers_index = -1
 
-	# Set new variables as either empty string or string parameter values
-	if color_index != -1:
-		new_color = command[color_index+1]
-	else:
-		new_color = ""
-	if  contain_index != -1:
-		new_x_coord = command[contain_index+1]
-		new_y_coord = command[contain_index+2]
-	else:
-		new_x_coord = ""
-		new_y_coord = ""
-	if refers_index != -1:
-		new_reference = command[refers_index+1:]
-		new_text = ' '.join(new_reference)
-	else:
-		new_text = ""
+	try:
+		pin_index = command.index("PINS")
+	except:
+		pin_index = -1
 
-	# copy the list to temp list
-	notes_returned = notes.copy()
+	if (pin_index == -1):
+		
+		try:
+			color_index = command.index("color")
+		except ValueError:
+			color_index = -1
+		try:
+			contain_index = command.index("contains")
+		except ValueError:
+			contain_index = -1
+		try:
+			refers_index = command.index("refersTo")
+		except ValueError:
+			refers_index = -1
 
-	# Filtering temp list based on client provided parameters
-	j = 0
-	while (j < len(notes_returned)):
-		if (color_index != -1 and str(notes_returned[j].color) != str(new_color)):
-			print("color popped: " + str(notes_returned[j].message))
-			notes_returned.pop(j)
-		elif (contain_index != -1 and (is_contained(notes_returned[j], new_x_coord, new_y_coord) == False)):
-			print("contains popped: " + str(notes_returned[j].message))
-			notes_returned.pop(j)
-		#problem is with following line
-		elif (refers_index != -1 and str(new_text) not in str(notes_returned[j].message)):
-			print("new_text is: " + str(new_text))
-			print("refersTo popped: " + str(notes_returned[j].message))
-			notes_returned.pop(j)
+		# Set new variables as either empty string or string parameter values
+		if color_index != -1:
+			new_color = command[color_index+1]
 		else:
-			j += 1
-
-	# send messages to client
-	obj_string = "\n"
-	for x in notes_returned:
-		if (x.status == 0):
-			obj_string += str(x) + " - Unpinned\n"
+			new_color = ""
+		if  contain_index != -1:
+			new_x_coord = command[contain_index+1]
+			new_y_coord = command[contain_index+2]
 		else:
-			obj_string += str(x) + " - Pinned \n"
-	return obj_string
+			new_x_coord = ""
+			new_y_coord = ""
+		if refers_index != -1:
+			new_reference = command[refers_index+1:]
+			new_text = ' '.join(new_reference)
+		else:
+			new_text = ""
+
+		# copy the list to temp list
+		notes_returned = notes.copy()
+
+		# Filtering temp list based on client provided parameters
+		j = 0
+		while (j < len(notes_returned)):
+			if (color_index != -1 and str(notes_returned[j].color) != str(new_color)):
+				print("color popped: " + str(notes_returned[j].message))
+				notes_returned.pop(j)
+			elif (contain_index != -1 and (is_contained(notes_returned[j], new_x_coord, new_y_coord) == False)):
+				print("contains popped: " + str(notes_returned[j].message))
+				notes_returned.pop(j)
+			elif (refers_index != -1 and str(new_text) not in str(notes_returned[j].message)):
+				print("new_text is: " + str(new_text))
+				print("refersTo popped: " + str(notes_returned[j].message))
+				notes_returned.pop(j)
+			else:
+				j += 1
+
+		# send messages to client
+		obj_string = "\n"
+		for x in notes_returned:
+			if (x.status == 0):
+				obj_string += str(x) + " - Unpinned\n"
+			else:
+				obj_string += str(x) + " - Pinned \n"
+		return obj_string
+
+	# PIN Command
+	else:
+		pin_string = "\n"
+		for x in pins:
+			pin_string += "PIN " + str(x[1]) + str(x[0]) + "\n"
+		return pin_string
 
 
 def clear():
@@ -183,15 +197,20 @@ def clear():
 def pin(choice, x, y):
 	for i in notes:
 		if (is_contained(i, x, y) == True):
+			print("pin is contained\n")
 			if (choice == "PIN"):
 				i.status += 1
-				print("Note Pinned successfully\n")
+				tup = (int(x), int(y))
+				pins.append(tup)
+				"""
+				for j in pins:
+					print("PIN " + str(j[0]) + " " + str(j[1]))
+				"""
+				return ("Note Pinned successfully at coord: " + str(j[0]) + " " + str(j[1]) + "\n")
 			elif (choice == "UNPIN"):
 				i.status -= 1
-				print("Note Unpinned successfully\n")
-			else:
-				print("This is wrong\n")
-	return "PIN Function complete\n"
+				return ("Note Unpinned successfully\n")
+	return "No notes to pin\n"
 
 
 def is_contained(note, x, y):
