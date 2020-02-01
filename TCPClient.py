@@ -1,7 +1,6 @@
 # Import socket module
 from socket import * 
-# In order to terminate the program
-import sys 
+import sys # In order to terminate the program
 
 serverName = 'localhost'
 # Assign a port number
@@ -12,16 +11,23 @@ clientSocket = socket(AF_INET, SOCK_STREAM)
 
 clientSocket.connect((serverName, serverPort))
 
-# POST 2 3 10 20 white
-# Prompt for input
-command = input('Enter Command (POST, GET, PIN/UNPIN, CLEAR, DISCONNECT):')
+connected = True
+while(connected):
+    # POST 2 3 10 20 white new message here
+    # Prompt for input TODO: Change this
+    command = input('Enter Command (POST, GET, PIN/UNPIN, CLEAR, DISCONNECT):')
 
-# Encode and send command to client
-clientSocket.send(command.encode())
+    # Encode and send command to server
+    clientSocket.send(command.encode())
 
-# Recieve response from server
-server_response = clientSocket.recv(1024)
+    # Recieve response from server
+    server_response = clientSocket.recv(1024)
 
-# Print server's response
-print('From server: ', server_response.decode())
+    # Print server's response
+    print('From server: ', server_response.decode())
+    
+    if (server_response.decode() == "DISCONNECTED"):
+        connected = False
+        clientSocket.close()
+
 clientSocket.close()

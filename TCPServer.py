@@ -58,7 +58,7 @@ def main(string):
 	# DISCONNECT
 	elif arr[0].upper() == 'DISCONNECT':
 		# Send some kind of message to client that server is closed
-		disconnect()
+		return disconnect()
 
 # Note class 
 class note:
@@ -205,7 +205,7 @@ def clear():
 		else:
 			i += 1
 	# Return message
-	return "All Unpined Notes Cleared!"
+	return "All Unpinned Notes Cleared!"
 
 # PIN function - updates the status of the note object 	
 def pin(choice, x, y):
@@ -221,11 +221,11 @@ def pin(choice, x, y):
 				for j in pins:
 					print("PIN " + str(j[0]) + " " + str(j[1]))
 				"""
-				return ("Note Pinned successfully at coord: " + str(j[0]) + " " + str(j[1]) + "\n")
+				return ("Note(s) Pinned successfully at coord: " + str(tup[0]) + " " + str(tup[1]) + "\n")
 			elif (choice == "UNPIN"):
 				i.status -= 1
-				return ("Note Unpinned successfully\n")
-	return "No notes to pin\n"
+				return ("Note(s) Unpinned successfully\n")
+	return "No notes to pin - Please post note first to pin it\n"
 
 # Function to determine if note can be pinned
 def is_contained(note, x, y):
@@ -239,8 +239,11 @@ def is_contained(note, x, y):
 
 # DISCONNECT function - server will disconnect from client
 def disconnect():
+	return "DISCONNECTED"
+	"""
 	serverSocket.close()
 	sys.exit()
+	"""
 
 # Create a TCP server socket
 #(AF_INET is used for IPv4 protocols)
@@ -256,14 +259,13 @@ serverSocket.bind(("", int(serverPort)))
 # Listen to at most 1 connection at a time TODO: Allow for multiple connections?
 serverSocket.listen(1)
 
+	# Set up a new connection from the client
+connectionSocket, addr = serverSocket.accept()
 print ('Server setup complete')
 
 # Server should be up and running and listening to the incoming connections
 while True:
 	print('The server is ready to receive')
-
-	# Set up a new connection from the client
-	connectionSocket, addr = serverSocket.accept()
 
 	# Get client's command
 	#1024 is maximum amount of data to be recieved
@@ -276,7 +278,10 @@ while True:
 	connectionSocket.send(server_response.encode())
 
 	# End connection with client
-	connectionSocket.close()
+	if (server_response == "DISCONNECTED"):
+		connectionSocket.close()
+		serverSocket.close()
+		sys.exit() # TODO: Remove this line, it's only for ease of testing
 
 serverSocket.close()
 # Terminate the program after sending the corresponding data
