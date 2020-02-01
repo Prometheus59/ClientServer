@@ -259,8 +259,19 @@ serverSocket.bind(("", int(serverPort)))
 # Listen to at most 1 connection at a time TODO: Allow for multiple connections?
 serverSocket.listen(1)
 
-	# Set up a new connection from the client
+# Set up a new connection from the client
 connectionSocket, addr = serverSocket.accept()
+
+
+# Create start message and send to client
+color_string = ""
+for x in colors:
+	color_string += str(x) + " "
+
+start_message = "\nBoard Dimensions: Height = " + str(main_board.board_height) + \
+	", Width = " + str(main_board.board_width) + "\nAvailable colors are " + \
+	color_string + "\n"
+connectionSocket.send(start_message.encode())
 print ('Server setup complete')
 
 # Server should be up and running and listening to the incoming connections

@@ -10,6 +10,8 @@ serverPort = 6550
 clientSocket = socket(AF_INET, SOCK_STREAM)
 
 clientSocket.connect((serverName, serverPort))
+server_response = clientSocket.recv(1024)
+print('From server: ', server_response.decode())
 
 connected = True
 while(connected):
