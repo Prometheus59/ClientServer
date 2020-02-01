@@ -191,7 +191,7 @@ def get(string):
 	else:
 		pin_string = "\n"
 		for x in pins:
-			pin_string += "PIN " + str(x[1]) + str(x[0]) + "\n"
+			pin_string += "PIN " + str(x[1]) + " " + str(x[0]) + "\n"
 		return pin_string
 
 # CLEAR function - clears all UNPINED notes
@@ -209,23 +209,20 @@ def clear():
 
 # PIN function - updates the status of the note object 	
 def pin(choice, x, y):
-	for i in notes:
-		# If pin lands on note
-		if (is_contained(i, x, y) == True):
-			print("pin is contained\n")
-			if (choice == "PIN"):
+
+	if (choice == "PIN"):
+		for i in notes:
+			if (is_contained(i, x, y)):
 				i.status += 1
 				tup = (int(x), int(y))
 				pins.append(tup)
-				"""
-				for j in pins:
-					print("PIN " + str(j[0]) + " " + str(j[1]))
-				"""
-				return ("Note(s) Pinned successfully at coord: " + str(tup[0]) + " " + str(tup[1]) + "\n")
-			elif (choice == "UNPIN"):
+		return ("Note(s) Pinned successfully at coord: " + str(tup[0]) + " " + str(tup[1]) + "\n")
+	elif (choice == "UNPIN"):
+		for i in notes:
+			if (is_contained(i, x, y)):
 				i.status -= 1
-				return ("Note(s) Unpinned successfully\n")
-	return "No notes to pin - Please post note first to pin it\n"
+		return ("Note(s) Unpinned successfully\n")
+	return "No notes to pin/unpin - Please post note first to pin it\n"
 
 # Function to determine if note can be pinned
 def is_contained(note, x, y):
