@@ -20,7 +20,7 @@ while(connected):
     command = input('Enter Command (POST, GET, PIN/UNPIN, CLEAR, DISCONNECT):')
 
     # Encode and send command to server
-    clientSocket.send(command.encode())
+    clientSocket.send(command.strip().encode())
 
     # Recieve response from server
     server_response = clientSocket.recv(1024)

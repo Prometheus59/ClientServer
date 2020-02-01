@@ -1,15 +1,51 @@
 # Import socket module
 from socket import * 
 # Import for multithreading
-import _thread
 import threading
 # Import to terminate the program
-import sys 
+import sys
 colors = []
 # Intial board
 port_number = sys.argv[1]
 board_width  = sys.argv[2]
 board_height = sys.argv[3]
+
+class ClientThread(threading.Thread):
+	def __init__(self, clientAddress, clientsocket):
+		threading.Thread.__init__(self)
+		self.csocket = clientsocket
+		print ("New client added")
+	def run(self):
+		color_string = ""
+		for x in colors:
+			color_string += str(x) + " "
+
+		start_message = "\nBoard Dimensions: Height = " + str(main_board.board_height) + \
+			", Width = " + str(main_board.board_width) + "\nAvailable colors are " + \
+			color_string + "\n"
+		connectionSocket.send(start_message.encode())
+		print ('Server setup complete')
+
+		# Server should be up and running and listening to the incoming connections
+		while True:
+			print('The server is ready to receive')
+
+			# Get client's command
+			#1024 is maximum amount of data to be recieved
+			string = connectionSocket.recv(1024).decode()
+
+			# Perform function/command (POST/GET/PIN/UNDERPIN/CLEAR/DISCONNECT)
+			server_response = main(string)
+
+			# Send results back to client
+			connectionSocket.send(server_response.encode())
+
+			# End connection with client
+			if (server_response == "DISCONNECTED"):
+				connectionSocket.close()
+				serverSocket.close()
+				sys.exit() # TODO: Remove this line, it's only for ease of testing
+
 
 # Add colors
 for x in sys.argv[4:]:
@@ -120,7 +156,7 @@ def post(note_obj):
 # GET function - retrives note from data strcture
 def get(string):
 	# Getting commands from client input
-	command = string.replace("="," ").split()
+	command = string.upper().replace("="," ").split()
 
 	try:
 		pin_index = command.index("PINS")
@@ -130,15 +166,15 @@ def get(string):
 	if (pin_index == -1):
 		
 		try:
-			color_index = command.index("color")
+			color_index = command.index("COLOR")
 		except ValueError:
 			color_index = -1
 		try:
-			contain_index = command.index("contains")
+			contain_index = command.index("CONTAINS")
 		except ValueError:
 			contain_index = -1
 		try:
-			refers_index = command.index("refersTo")
+			refers_index = command.index("REFERSTO")
 		except ValueError:
 			refers_index = -1
 
@@ -210,7 +246,7 @@ def clear():
 # PIN function - updates the status of the note object 	
 def pin(choice, x, y):
 
-	if (choice == "PIN"):
+	if (choice.upper() == "PIN"):
 		for i in notes:
 			if (is_contained(i, x, y)):
 				i.status += 1
@@ -242,6 +278,7 @@ def disconnect():
 	sys.exit()
 	"""
 
+
 # Create a TCP server socket
 #(AF_INET is used for IPv4 protocols)
 #(SOCK_STREAM is used for TCP)
@@ -253,43 +290,13 @@ serverPort = main_board.port_number
 # Bind the socket to server address and server port
 serverSocket.bind(("", int(serverPort)))
 
-# Listen to at most 1 connection at a time TODO: Allow for multiple connections?
-serverSocket.listen(1)
-
-# Set up a new connection from the client
-connectionSocket, addr = serverSocket.accept()
-
-
-# Create start message and send to client
-color_string = ""
-for x in colors:
-	color_string += str(x) + " "
-
-start_message = "\nBoard Dimensions: Height = " + str(main_board.board_height) + \
-	", Width = " + str(main_board.board_width) + "\nAvailable colors are " + \
-	color_string + "\n"
-connectionSocket.send(start_message.encode())
-print ('Server setup complete')
-
-# Server should be up and running and listening to the incoming connections
-while True:
-	print('The server is ready to receive')
-
-	# Get client's command
-	#1024 is maximum amount of data to be recieved
-	string = connectionSocket.recv(1024).decode()
-
-	# Perform function/command (POST/GET/PIN/UNDERPIN/CLEAR/DISCONNECT)
-	server_response = main(string)
-
-	# Send results back to client
-	connectionSocket.send(server_response.encode())
-
-	# End connection with client
-	if (server_response == "DISCONNECTED"):
-		connectionSocket.close()
-		serverSocket.close()
-		sys.exit() # TODO: Remove this line, it's only for ease of testing
+while (True):
+	# Listen to at most 1 connection at a time TODO: Allow for multiple connections?
+	serverSocket.listen(1)
+	# Set up a new connection from the client
+	connectionSocket, addr = serverSocket.accept()
+	newthread = ClientThread(addr, connectionSocket)
+	newthread.start()
 
 serverSocket.close()
 # Terminate the program after sending the corresponding data
