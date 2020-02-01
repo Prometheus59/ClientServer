@@ -4,29 +4,64 @@ from socket import *
 import threading
 # Import to terminate the program
 import sys
+
+# List to hold note objects
+notes = []
+# List to hold pin coordinates (in tuples)
+pins = []
+# List to hold board colors
 colors = []
-# Intial board
-port_number = sys.argv[1]
-board_width  = sys.argv[2]
-board_height = sys.argv[3]
+
+if (len(sys.argv) < 4):
+	print("""Server requires more attributes\nPlease follow the correct format: 
+	
+	python Server.py <port_number> <width> <height> <colors ...>\n
+	""")
+	sys.exit()
+else:
+	# Get server details from command line
+	port_number = sys.argv[1]
+	board_width  = sys.argv[2]
+	board_height = sys.argv[3]
+	# Add colors
+	for x in sys.argv[4:]:
+		colors.append(x)
+
+# Board class 
+class board:
+	# Initialzie board
+	def __init__(self, port_number, board_width, board_height, colors):
+		self.port_number = port_number
+		self.board_width = board_width
+		self.board_height = board_height
+		self.colors = colors
+
+# This is shared between all clients (share object)
+main_board = board(port_number, board_width, board_height, colors)
+
 
 class ClientThread(threading.Thread):
+	# Initialize the thread
 	def __init__(self, clientAddress, clientsocket):
 		threading.Thread.__init__(self)
 		self.csocket = clientsocket
 		print ("New client added")
+
+	# Function for each thread to run
 	def run(self):
 		color_string = ""
 		for x in colors:
 			color_string += str(x) + " "
 
+		# Create message to send when connected to client
 		start_message = "\nBoard Dimensions: Height = " + str(main_board.board_height) + \
 			", Width = " + str(main_board.board_width) + "\nAvailable colors are " + \
 			color_string + "\n"
+		# Send message
 		connectionSocket.send(start_message.encode())
 		print ('Server setup complete')
 
-		# Server should be up and running and listening to the incoming connections
+		# Server is now up and running and listening to the incoming connections
 		while True:
 			print('The server is ready to receive')
 
@@ -44,31 +79,32 @@ class ClientThread(threading.Thread):
 			if (server_response == "DISCONNECTED"):
 				connectionSocket.close()
 				serverSocket.close()
-				sys.exit() # TODO: Remove this line, it's only for ease of testing
+				# sys.exit() # TODO: Remove this line, it's only for ease of testing
 
 
-# Add colors
-for x in sys.argv[4:]:
-	colors.append(x)
+# Create a TCP server socket
+#(AF_INET is used for IPv4 protocols)
+#(SOCK_STREAM is used for TCP)
+serverSocket = socket(AF_INET, SOCK_STREAM)
 
-for x in colors:
-	print("Color added: " + str(x))
+# Assign a port number
+serverPort = main_board.port_number
 
-# Board class 
-class board:
-	# Initialzie board
-	def __init__(self, port_number, board_width, board_height, colors):
-		self.port_number = port_number
-		self.board_width = board_width
-		self.board_height = board_height
-		self.colors = colors
+# Bind the socket to server address and server port
+serverSocket.bind(("", int(serverPort)))
 
-# This is shared between all clients (share object)
-main_board = board(port_number, board_width, board_height, colors)
-# Data structure to hold note objects
-notes = []
-# Data structure to hold pin coordinates
-pins = []
+while (True):
+	# Listen to at most 1 connection at a time TODO: Allow for multiple connections?
+	serverSocket.listen(1)
+	# Set up a new connection from the client
+	connectionSocket, addr = serverSocket.accept()
+	# Set up new thread and start it
+	newthread = ClientThread(addr, connectionSocket)
+	newthread.start()
+
+serverSocket.close()
+# Terminate the program after sending the corresponding data
+sys.exit()
 
 # Main function to call on other functions
 def main(string):
@@ -94,7 +130,7 @@ def main(string):
 	# DISCONNECT
 	elif arr[0].upper() == 'DISCONNECT':
 		# Send some kind of message to client that server is closed
-		return disconnect()
+		return "DISCONNECTED"
 
 # Note class 
 class note:
@@ -269,35 +305,3 @@ def is_contained(note, x, y):
 	else:
 		print("Note Contained")
 		return False
-
-# DISCONNECT function - server will disconnect from client
-def disconnect():
-	return "DISCONNECTED"
-	"""
-	serverSocket.close()
-	sys.exit()
-	"""
-
-
-# Create a TCP server socket
-#(AF_INET is used for IPv4 protocols)
-#(SOCK_STREAM is used for TCP)
-serverSocket = socket(AF_INET, SOCK_STREAM)
-
-# Assign a port number
-serverPort = main_board.port_number
-
-# Bind the socket to server address and server port
-serverSocket.bind(("", int(serverPort)))
-
-while (True):
-	# Listen to at most 1 connection at a time TODO: Allow for multiple connections?
-	serverSocket.listen(1)
-	# Set up a new connection from the client
-	connectionSocket, addr = serverSocket.accept()
-	newthread = ClientThread(addr, connectionSocket)
-	newthread.start()
-
-serverSocket.close()
-# Terminate the program after sending the corresponding data
-sys.exit()
