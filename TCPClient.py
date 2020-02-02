@@ -14,7 +14,7 @@ clientSocket.connect((serverName, serverPort))
 
 # POST 2 3 10 20 white
 # Prompt for input
-command = input('Enter Command (POST, GET, PIN/UNPIN, CLEAR, DISCONNECT):')
+command = input('DISCONNECT\nPOST\nGET\nPIN\nUNPIN\nCLEAR\n')
 
 # Encode and send command to client
 clientSocket.send(command.encode())

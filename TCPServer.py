@@ -14,10 +14,11 @@ board_height = sys.argv[3]
 # Add colors
 for x in sys.argv[4:]:
 	colors.append(x)
-
+'''
+# See what colors are added
 for x in colors:
 	print("Color added: " + str(x))
-
+'''
 # Board class 
 class board:
 	# Initialzie board
@@ -33,17 +34,21 @@ main_board = board(port_number, board_width, board_height, colors)
 notes = []
 # Data structure to hold pin coordinates
 pins = []
-
 # Main function to call on other functions
 def main(string):
 	# Split string to get user request
 	arr = string.split(" ", 1)
 	# POST
 	if arr[0].upper() == 'POST':
-		# Split strinf to get each element
+		# Split string to get each element
 		arr = string.split(" ", 6)
-		new_note = note(arr[1], arr[2], arr[3], arr[4], arr[5], arr[6])
-		return post(new_note)
+		# Ensure all attributes are given
+		if len(arr) <= 6:
+			return "POST requires more attributes\nPlease follow the correct format: POST <x-cooridinate> <y-cooridinate> <width> <height> <color> <message>\n"
+		# Else add attributes to new note object
+		else:
+			new_note = note(arr[1], arr[2], arr[3], arr[4], arr[5], arr[6])
+			return post(new_note)
 	# GET
 	elif arr[0].upper() == 'GET':
 		return get(string)
@@ -52,9 +57,13 @@ def main(string):
 		return clear()
 	# PIN/UNPIN
 	elif arr[0].upper() == 'PIN' or arr[0].upper() == 'UNPIN':
-		# Split strinf to get each element
+		# Split string to get each element
 		arr = string.split(" ", 3)
-		return pin(arr[0], arr[1], arr[2])
+		if len(arr) < 3:
+			#return str((len(arr)))
+			return "PIN/UNPIN requires more attributes\nPlease follow the correct format: PIN/UNPIN <x-cooridinate> <y-cooridinate>"
+		else:
+			return pin(arr[0], arr[1], arr[2])
 	# DISCONNECT
 	elif arr[0].upper() == 'DISCONNECT':
 		return disconnect()
@@ -92,9 +101,7 @@ class note:
 		else:
 			return True
 
-
-# pins = [(1,1), (2,2), (3,3)]
-# POST function - puts note into data strcture
+# POST function - puts note into data structure
 def post(note_obj):
 	"""
 	if (int(note_obj.height) + int(note_obj.coord_y)) < int(main_board.board_height) and \
@@ -107,14 +114,14 @@ def post(note_obj):
 		# Add to list if true
 		notes.append(note_obj)
 		# Return message
-		return "You Note Has Been Posted!"
+		return "Your note has been posted!"
 	else:
-		print("Note Height Is: " + note_obj.height + note_obj.coord_y)
-		print("Board Height Is: " + main_board.board_height)
+		print("Note height is: " + note_obj.height + note_obj.coord_y)
+		print("Board height is: " + main_board.board_height)
 		# Return message
-		return "Note Not Posted: Insufficient Space On Board..."
+		return "Note not posted: Insufficient space on board..."
 
-# GET function - retrives note from data strcture
+# GET function - retrives note from data structure
 def get(string):
 	# Getting commands from client input
 	command = string.replace("="," ").split()
@@ -133,20 +140,29 @@ def get(string):
 
 	# Set new variables as either empty string or string parameter values
 	if color_index != -1:
-		new_color = command[color_index+1]			# Get the color
+		try:
+			new_color = command[color_index + 1]		# Get the color
+		except IndexError:
+			return "GET color= requires more attributes\nPlease follow the correct format: GET color= <color>"
 	else:
 		new_color = ""
 
 	if  contain_index != -1:
-		new_x_coord = command[contain_index+1]		# Get the X-Cord
-		new_y_coord = command[contain_index+2]		# Get the Y-Cord
+		try:
+			new_x_coord = command[contain_index+1]		# Get the X-Cord
+			new_y_coord = command[contain_index+2]		# Get the Y-Cord
+		except IndexError:
+			return "GET contains= requires more attributes\nPlease follow the correct format: GET contains= <x-coordinate> <y_coordinate>"
 	else:
 		new_x_coord = ""
 		new_y_coord = ""
 
 	if refers_index != -1:
-		new_reference = command[contain_index:]		# Get text
-		new_text = ' '.join(new_reference)			# Turn into string
+		try:
+			new_reference = command[contain_index:]		# Get text
+			new_text = ' '.join(new_reference)			# Turn into string
+		except IndexError:
+			return "GET refersTo= requires more attributes\nPlease follow the correct format: GET refersTo= <message>"
 	else:
 		new_text = ""
 
@@ -177,16 +193,16 @@ def get(string):
 
 # CLEAR function - clears all UNPINED notes
 def clear():
-	i = 0;
+	i = 0
 	while (i < len(notes)):
 		print("Status Of: " + str(notes[i].message) + " Is " + str(notes[i].status))
 		if (notes[i].status <= 0):
-			# print("Note removed: " + str(i.message))
-			notes.pop(i)	# Remove note from list
+			# Remove note from list
+			notes.pop(i)	
 		else:
 			i += 1
 	# Return message
-	return "All Unpined Notes Cleared!"
+	return "All unpined notes cleared!"
 
 # PIN function - updates the status of the note object 	
 def pin(choice, x, y):
@@ -195,14 +211,14 @@ def pin(choice, x, y):
 		if (is_contained(i, x, y) == True):
 			if (choice == "PIN"):
 				i.status += 1
-				print("Note Pinned Successfully!\n")
+				print("Note pinned successfully!\n")
 
 			elif (choice == "UNPIN"):
 				i.status -= 1
-				print("Note Unpinned Successfully!\n")
+				print("Note unpinned successfully!\n")
 
 			else:
-				print("Something Went Wrong...\n")
+				print("Something went wrong...\n")
 	# Return message
 	return "PIN Function complete\n"
 
@@ -210,10 +226,10 @@ def pin(choice, x, y):
 def is_contained(note, x, y):
 	if ((int(y)<(int(note.coord_y) + int(note.height)) and (int(y) > int(note.coord_y))) and \
 		(int(x)<(int(note.coord_x) + int(note.width)) and (int(x) > int(note.coord_x)))):
-		print("Note Not Contained")
+		print("Note not contained")
 		return True
 	else:
-		print("Note Contained")
+		print("Note contained")
 		return False
 
 # DISCONNECT function - server will disconnect from client
