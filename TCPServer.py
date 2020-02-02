@@ -62,8 +62,10 @@ def main(string):
 		return pin(arr[0], arr[1], arr[2])
 	# DISCONNECT
 	elif arr[0].upper() == 'DISCONNECT':
-		# Send some kind of message to client that server is closed
+		# Send message to client that server is closed
 		return "DISCONNECTED"
+	else:
+		return "Invalid Command - Please try again\n"
 
 # Note class 
 class note:
@@ -263,7 +265,8 @@ class ClientThread(threading.Thread):
 		print ('Server setup complete')
 
 		# Server is now up and running and listening to the incoming connections
-		while True:
+		client_connected = True
+		while (client_connected):
 			print('The server is ready to receive')
 
 			# Get client's command
@@ -278,8 +281,9 @@ class ClientThread(threading.Thread):
 
 			# End connection with client
 			if (server_response == "DISCONNECTED"):
+				client_connected = False
 				connectionSocket.close()
-				serverSocket.close()
+				# serverSocket.close()
 				# sys.exit() # TODO: Remove this line, it's only for ease of testing
 
 
@@ -296,7 +300,7 @@ serverSocket.bind(("", int(serverPort)))
 print("Server Activated - Use client to interact with server\n")
 
 while (True):
-	# Listen to at most 1 connection at a time TODO: Allow for multiple connections?
+	# Listen to at most 1 connection at a time (per thread)
 	serverSocket.listen(1)
 	# Set up a new connection from the client
 	connectionSocket, addr = serverSocket.accept()

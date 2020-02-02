@@ -19,6 +19,10 @@ while(connected):
     # Prompt for input TODO: Change this
     command = input('Enter Command (POST, GET, PIN/UNPIN, CLEAR, DISCONNECT):')
 
+    if (command == ""):
+        print("Not enough arguments, please retry\n")
+        continue
+
     # Encode and send command to server
     clientSocket.send(command.strip().encode())
 
@@ -30,6 +34,6 @@ while(connected):
     
     if (server_response.decode() == "DISCONNECTED"):
         connected = False
-        clientSocket.close()
+        # clientSocket.close()
 
 clientSocket.close()
