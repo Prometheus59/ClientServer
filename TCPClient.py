@@ -1,6 +1,7 @@
 # Import socket module
 from socket import * 
-import sys # In order to terminate the program
+# In order to terminate the program
+import sys 
 
 serverName = 'localhost'
 # Assign a port number
@@ -17,7 +18,7 @@ connected = True
 while(connected):
     # POST 2 3 10 20 white new message here
     # Prompt for input TODO: Change this
-    command = input('Enter Command (POST, GET, PIN/UNPIN, CLEAR, DISCONNECT):')
+    command = input('DISCONNECT\nPOST\nGET\nPIN\nUNPIN\nCLEAR\n')
 
     if (command == ""):
         print("Not enough arguments, please retry\n")

@@ -45,10 +45,15 @@ def main(string):
 	arr = string.split(" ", 1)
 	# POST
 	if arr[0].upper() == 'POST':
-		# Split strinf to get each element
+		# Split string to get each element
 		arr = string.split(" ", 6)
-		new_note = note(arr[1], arr[2], arr[3], arr[4], arr[5], arr[6])
-		return post(new_note)
+		# Ensure all attributes are given
+		if len(arr) <= 6:
+			return "POST requires more attributes\nPlease follow the correct format: POST <x-cooridinate> <y-cooridinate> <width> <height> <color> <message>\n"
+		# Else add attributes to new note object
+		else:
+			new_note = note(arr[1], arr[2], arr[3], arr[4], arr[5], arr[6])
+			return post(new_note)
 	# GET
 	elif arr[0].upper() == 'GET':
 		return get(string)
@@ -203,7 +208,7 @@ def get(string):
 
 # CLEAR function - clears all UNPINED notes
 def clear():
-	i = 0;
+	i = 0
 	while (i < len(notes)):
 		print("Status Of: " + str(notes[i].message) + " Is " + str(notes[i].status))
 		if (notes[i].status <= 0):
