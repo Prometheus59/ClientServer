@@ -1,3 +1,11 @@
+'''
+---------------------------------
+Authors: 	Ryan Karumanchery & Ramandeep Saini
+Date: 		02/02/2020
+Title: 		CP372 Assignment One
+Desc:		Note Application
+---------------------------------
+'''
 # Import socket module
 from socket import * 
 # Import for multithreading
@@ -11,7 +19,7 @@ notes = []
 pins = []
 # List to hold board colors
 colors = []
-
+# The attributes needed for the inital board 
 if (len(sys.argv) < 4):
 	print("""Server requires more attributes\nPlease follow the correct format: 
 	
@@ -20,11 +28,11 @@ if (len(sys.argv) < 4):
 	sys.exit()
 else:
 	# Get server details from command line
-	port_number = sys.argv[1]
-	board_width  = sys.argv[2]
-	board_height = sys.argv[3]
+	port_number = sys.argv[1]	# Port number
+	board_width  = sys.argv[2]	# Width
+	board_height = sys.argv[3]	# Height
 	# Add colors
-	for x in sys.argv[4:]:
+	for x in sys.argv[4:]:		# Colors
 		colors.append(x)
 
 # Board class 
@@ -64,7 +72,11 @@ def main(string):
 	elif arr[0].upper() == 'PIN' or arr[0].upper() == 'UNPIN':
 		# Split strinf to get each element
 		arr = string.split(" ", 3)
-		return pin(arr[0], arr[1], arr[2])
+		# Ensure all attributes are given
+		if len(arr) < 3:
+			return "PIN/UNPIN requires more attributes\nPlease follow the correct format: PIN/UNPIN <x-cooridinate> <y-cooridinate>"
+		else:
+			return pin(arr[0], arr[1], arr[2])
 	# DISCONNECT
 	elif arr[0].upper() == 'DISCONNECT':
 		# Send message to client that server is closed
@@ -104,6 +116,12 @@ class note:
 			return False
 		else:
 			return True
+	# Check if the color is available
+	def check_color(self):
+		if (self.color not in main_board.colors):
+			return False
+		else:
+			return True
 
 	def check_color(self):
 		if (self.color not in main_board.colors):
@@ -111,7 +129,7 @@ class note:
 		else:
 			return True
 
-# Post incomplete - Must account for board information (color)
+# Post function - stores notes into data strcture
 def post(note_obj):
 	"""
 	if (int(note_obj.height) + int(note_obj.coord_y)) < int(main_board.board_height) and \
@@ -121,13 +139,12 @@ def post(note_obj):
 		"""
 	if (note_obj.check_dimensions() and note_obj.check_color()):
 		notes.append(note_obj)
-		return "note posted"
+		return "Your note has been posted!"
 	elif(note_obj.check_dimensions() == False):
-		return "Message not posted: Insufficient space on board"
+		return "Message not posted: Insufficient space on board..."
 	else:
-		return "Message not posted: Color not permitted on board"
+		return "Message not posted: Color not permitted on board..."
 	# print("note posted: " + note_obj.message)
-
 
 # GET function - retrives note from data strcture
 def get(string):
@@ -156,18 +173,29 @@ def get(string):
 
 		# Set new variables as either empty string or string parameter values
 		if color_index != -1:
-			new_color = command[color_index+1]
+			try:
+				new_color = command[color_index+1]
+			except IndexError:
+				return "GET color= requires more attributes\nPlease follow the correct format: GET color= <color>"
 		else:
 			new_color = ""
+
 		if  contain_index != -1:
-			new_x_coord = command[contain_index+1]
-			new_y_coord = command[contain_index+2]
+			try:
+				new_x_coord = command[contain_index+1]
+				new_y_coord = command[contain_index+2]
+			except IndexError:
+				return "GET contains= requires more attributes\nPlease follow the correct format: GET contains= <x-coordinate> <y_coordinate>"
 		else:
 			new_x_coord = ""
 			new_y_coord = ""
+
 		if refers_index != -1:
-			new_reference = command[refers_index+1:]
-			new_text = ' '.join(new_reference)
+			try:
+				new_reference = command[refers_index+1:]
+				new_text = ' '.join(new_reference)
+			except IndexError:
+				return "GET refersTo= requires more attributes\nPlease follow the correct format: GET refersTo= <message>"
 		else:
 			new_text = ""
 
@@ -190,7 +218,7 @@ def get(string):
 			else:
 				j += 1
 
-		# send messages to client
+		# Send messages to client with status
 		obj_string = "\n"
 		for x in notes_returned:
 			if (x.status == 0):
@@ -224,6 +252,7 @@ def pin(choice, x, y):
 
 	if (choice.upper() == "PIN"):
 		for i in notes:
+      # Store coordinates in tuple to send to list
 			tup = (int(x), int(y))
 			if (is_contained(i, x, y)):
 				i.status += 1
@@ -233,7 +262,9 @@ def pin(choice, x, y):
 		for i in notes:
 			if (is_contained(i, x, y)):
 				i.status -= 1
-		return ("Note(s) Unpinned successfully\n")
+		# Return message - unpinned
+		return ("Note(s) unpinned successfully\n")
+	# Return message - no pins
 	return "No notes to pin/unpin - Please post note first to pin it\n"
 
 # Function to determine if note can be pinned

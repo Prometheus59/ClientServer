@@ -17,7 +17,7 @@ print('From server: ', server_response.decode())
 connected = True
 while(connected):
     # POST 2 3 10 20 white new message here
-    # Prompt for input TODO: Change this
+    # Prompt for input
     command = input('DISCONNECT\nPOST\nGET\nPIN\nUNPIN\nCLEAR\n')
 
     if (command == ""):
