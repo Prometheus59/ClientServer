@@ -112,17 +112,13 @@ class note:
 	# Check if the note will fit on the board
 	def check_dimensions(self):
 		if (int(self.coord_x) + int(self.width)) > int(main_board.board_width) or \
-			(int(self.coord_y) + int(self.height)) > int(main_board.board_height):
+			(int(self.coord_x) < 0) or (int(self.coord_y) < 0) or \
+			(int(self.coord_y) + int(self.height)) > int(main_board.board_height) or \
+			(int(self.width) < 0) or (int(self.height) < 0):
 			return False
 		else:
 			return True
 	# Check if the color is available
-	def check_color(self):
-		if (self.color not in main_board.colors):
-			return False
-		else:
-			return True
-
 	def check_color(self):
 		if (self.color not in main_board.colors):
 			return False
@@ -176,7 +172,7 @@ def get(string):
 			try:
 				new_color = command[color_index+1]
 			except IndexError:
-				return "GET color= requires more attributes\nPlease follow the correct format: GET color= <color>"
+				return "GET color= requires more attributes\nPlease follow the correct format: GET color= <color>\n"
 		else:
 			new_color = ""
 
@@ -185,7 +181,7 @@ def get(string):
 				new_x_coord = command[contain_index+1]
 				new_y_coord = command[contain_index+2]
 			except IndexError:
-				return "GET contains= requires more attributes\nPlease follow the correct format: GET contains= <x-coordinate> <y_coordinate>"
+				return "GET contains= requires more attributes\nPlease follow the correct format: GET contains= <x-coordinate> <y_coordinate>\n"
 		else:
 			new_x_coord = ""
 			new_y_coord = ""
@@ -195,7 +191,7 @@ def get(string):
 				new_reference = command[refers_index+1:]
 				new_text = ' '.join(new_reference)
 			except IndexError:
-				return "GET refersTo= requires more attributes\nPlease follow the correct format: GET refersTo= <message>"
+				return "GET refersTo= requires more attributes\nPlease follow the correct format: GET refersTo= <message>\n"
 		else:
 			new_text = ""
 
@@ -205,14 +201,14 @@ def get(string):
 		# Filtering temp list based on client provided parameters
 		j = 0
 		while (j < len(notes_returned)):
-			if (color_index != -1 and str(notes_returned[j].color) != str(new_color)):
+			if (color_index != -1 and str(notes_returned[j].color.upper()) != str(new_color)):
 				print("color popped: " + str(notes_returned[j].message))
+				print(str(new_color))
 				notes_returned.pop(j)
 			elif (contain_index != -1 and (is_contained(notes_returned[j], new_x_coord, new_y_coord) == False)):
 				print("contains popped: " + str(notes_returned[j].message))
 				notes_returned.pop(j)
-			elif (refers_index != -1 and str(new_text) not in str(notes_returned[j].message)):
-				print("new_text is: " + str(new_text))
+			elif (refers_index != -1 and str(new_text) not in str(notes_returned[j].message.upper())):
 				print("refersTo popped: " + str(notes_returned[j].message))
 				notes_returned.pop(j)
 			else:
@@ -258,7 +254,10 @@ def pin(choice, x, y):
 				i.status += 1
 				pins.append(tup)
 		return ("Note(s) Pinned successfully at coord: " + str(x) + " " + str(y) + "\n")
-	elif (choice == "UNPIN"):
+	elif (choice.upper() == "UNPIN"):
+		for j in pins:
+			if (j[0] == int(x) and j[1] == int(y)):
+				pins.remove(j)
 		for i in notes:
 			if (is_contained(i, x, y)):
 				i.status -= 1
@@ -269,12 +268,12 @@ def pin(choice, x, y):
 
 # Function to determine if note can be pinned
 def is_contained(note, x, y):
-	if ((int(y)<(int(note.coord_y) + int(note.height)) and (int(y) > int(note.coord_y))) and \
-		(int(x)<(int(note.coord_x) + int(note.width)) and (int(x) > int(note.coord_x)))):
-		print("Note Not Contained")
+	if ((int(y)<=(int(note.coord_y) + int(note.height)) and (int(y) >= int(note.coord_y))) and \
+		(int(x)<=(int(note.coord_x) + int(note.width)) and (int(x) >= int(note.coord_x)))):
+		print("Note Contained")
 		return True
 	else:
-		print("Note Contained")
+		print("Note Not Contained")
 		return False
 
 

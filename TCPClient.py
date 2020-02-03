@@ -18,7 +18,7 @@ connected = True
 while(connected):
     # POST 2 3 10 20 white new message here
     # Prompt for input
-    command = input('DISCONNECT\nPOST\nGET\nPIN\nUNPIN\nCLEAR\n')
+    command = input('Please enter a command <DISCONNECT, POST, GET, PIN, UNPIN, CLEAR>:')
 
     if (command == ""):
         print("Not enough arguments, please retry\n")
