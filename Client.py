@@ -1,3 +1,13 @@
+'''
+---------------------------------
+Authors: 	    Ryan Karumanchery & Ramandeep Saini
+Student IDs:    160349950 & 170627510
+Date: 		    02/02/2020
+Title: 		    CP372 Assignment One
+Desc:		    Server for Note Application
+---------------------------------
+'''
+
 # Import socket module
 from socket import * 
 # In order to terminate the program
