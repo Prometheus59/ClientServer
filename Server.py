@@ -3,7 +3,7 @@
 Authors: 	Ryan Karumanchery & Ramandeep Saini
 Date: 		02/02/2020
 Title: 		CP372 Assignment One
-Desc:		Note Application
+Desc:		Server for Note Application
 ---------------------------------
 '''
 # Import socket module
